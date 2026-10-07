@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpamGuard AI - Enterprise PyTorch Email Spam Filter</title>
+  <meta name="description" content="Production-ready email spam classification powered by PyTorch, BiLSTM with Attention, and Transformers.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=2.1">
+</head>
+<body>
+  <div class="app-background">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+  </div>
+
+  <div class="app-layout">
+    
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <!-- Brand Header -->
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">SpamGuard<span class="brand-accent">.AI</span></span>
+          <span class="brand-sub">PyTorch Email Security</span>
+        </div>
+      </div>
+
+      <!-- Navigation Section -->
+      <div class="sidebar-section-title">WORKFLOW MODULES</div>
+      <nav class="sidebar-nav" role="tablist">
+        
+        <button class="sidebar-nav-item active" data-tab="live-tab" id="tab-live-btn" role="tab">
+          <div class="nav-item-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-2 10h5L11 22l2-10H8l5-10z"/></svg>
+          </div>
+          <div class="nav-item-text">
+            <span class="nav-title">Live Analyzer</span>
+            <span class="nav-desc">Real-time threat detection</span>
+          </div>
+        </button>
+
+        <button class="sidebar-nav-item" data-tab="training-tab" id="tab-training-btn" role="tab">
+          <div class="nav-item-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+          </div>
+          <div class="nav-item-text">
+            <span class="nav-title">Training Studio</span>
+            <span class="nav-desc">Ingest, clean & train</span>
+          </div>
+          <span class="sidebar-badge new-badge">NEW</span>
+        </button>
+
+        <button class="sidebar-nav-item" data-tab="batch-tab" id="tab-batch-btn" role="tab">
+          <div class="nav-item-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>
+          </div>
+          <div class="nav-item-text">
+            <span class="nav-title">Batch Scanner</span>
+            <span class="nav-desc">Bulk email classification</span>
+          </div>
+        </button>
+
+        <button class="sidebar-nav-item" data-tab="benchmark-tab" id="tab-benchmark-btn" role="tab">
+          <div class="nav-item-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          </div>
+          <div class="nav-item-text">
+            <span class="nav-title">Benchmarks & Plots</span>
+            <span class="nav-desc">ROC & F1-score analytics</span>
+          </div>
+        </button>
+
+      </nav>
+
+      <!-- Quick Actions / Shortcuts -->
+      <div class="sidebar-section-title">DATASET QUICK ACTIONS</div>
+      <div class="sidebar-quick-actions">
+        <button type="button" class="sidebar-action-btn" id="sidebar-load-corpus-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Load 5,163 Corpus
+        </button>
+        <button type="button" class="sidebar-action-btn" id="sidebar-load-demo-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Load 50 Demo Samples
+        </button>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="status-card-box">
+          <div class="status-indicator">
+            <span class="status-dot pulsing" id="sidebar-pulse-dot"></span>
+            <span class="status-title" id="health-text">Online • CPU • baseline_lr</span>
+          </div>
+          <span class="status-latency-tag">SLA: &lt; 100ms CPU</span>
+        </div>
+
+        <a href="/docs" target="_blank" class="sidebar-docs-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+          REST API Docs
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN VIEWPORT -->
+    <div class="app-main-viewport">
+      
+      <!-- Top Viewport Header -->
+      <header class="top-viewport-header">
+        <div class="header-breadcrumbs">
+          <span class="crumb-root">SpamGuard AI</span>
+          <span class="crumb-separator">/</span>
+          <span class="crumb-active" id="active-breadcrumb-title">Live Analyzer</span>
+        </div>
+
+        <div class="viewport-header-actions">
+          <button type="button" class="header-btn" id="header-open-studio-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="M2 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="M12 22v-4"/><path d="m19.07 19.07-2.83-2.83"/><path d="M22 12h-4"/><path d="m19.07 4.93-2.83 2.83"/></svg>
+            Training & Cleaning Studio
+          </button>
+          <a href="/docs" target="_blank" class="api-docs-link" title="Open Swagger Docs">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+            Swagger API
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+
+        <!-- TAB 1: LIVE ANALYZER -->
+        <section id="live-tab" class="tab-panel active">
+          <div class="split-view">
+            
+            <!-- Left: Input & Configurations -->
+            <div class="card glass-card input-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h2 class="card-title">Email Payload Inspector</h2>
+                <p class="card-subtitle">Paste incoming message body or test with realistic curated vectors</p>
+              </div>
+              <div class="model-select-wrapper">
+                <label for="model-select" class="field-label">Engine:</label>
+                <select id="model-select" class="custom-select">
+                  <option value="bilstm" selected>PyTorch BiLSTM + Attention</option>
+                  <option value="distilbert">DistilBERT Transformer</option>
+                  <option value="baseline_lr">TF-IDF + Logistic Regression</option>
+                  <option value="baseline_nb">TF-IDF + Naive Bayes</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Quick Template Chips -->
+            <div class="preset-section">
+              <span class="preset-label">Quick Scenarios:</span>
+              <div class="preset-chips">
+                <button type="button" class="preset-chip spam" data-type="tamara">⚠️ Tamara Password Expiry</button>
+                <button type="button" class="preset-chip spam" data-type="eft">💳 Jacob Fake EFT Payment</button>
+                <button type="button" class="preset-chip spam" data-type="phish">🎣 Phishing Alert</button>
+                <button type="button" class="preset-chip spam" data-type="lottery">💰 Wire / Lottery</button>
+                <button type="button" class="preset-chip spam" data-type="crypto">🪙 Crypto Scheme</button>
+                <button type="button" class="preset-chip ham" data-type="work">💼 Project Sync</button>
+                <button type="button" class="preset-chip ham" data-type="github">🐙 Pull Request</button>
+                <button type="button" class="preset-chip ham" data-type="flight">✈️ Flight Confirmation</button>
+              </div>
+            </div>
+
+            <!-- Editor -->
+            <div class="textarea-container">
+              <textarea id="email-input" class="custom-textarea" rows="9" placeholder="Paste email content here... (e.g. 'URGENT: Your account has been suspended...')"></textarea>
+              <div class="textarea-footer">
+                <span id="char-counter">0 chars | 0 words</span>
+                <button type="button" id="clear-btn" class="text-btn">Clear Text</button>
+              </div>
+            </div>
+
+            <!-- Action bar -->
+            <div class="action-bar">
+              <label class="toggle-container">
+                <input type="checkbox" id="explain-toggle" checked>
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Extract Explainability Signals & Attention</span>
+              </label>
+
+              <button type="button" id="analyze-btn" class="primary-btn glow-btn">
+                <span class="btn-spinner hidden" id="analyze-spinner"></span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <span id="analyze-btn-text">Run Security Scan</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Output & Metrics -->
+          <div class="card glass-card output-card" id="result-container">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h2 class="card-title">Threat Assessment</h2>
+                <p class="card-subtitle">Real-time classification result & attention attribution</p>
+              </div>
+              <div id="verdict-badge" class="verdict-badge pending">
+                <span class="badge-dot"></span>
+                <span id="verdict-label">Awaiting Input</span>
+              </div>
+            </div>
+
+            <!-- Radial Gauge & KPIs -->
+            <div class="gauge-kpi-row">
+              <div class="gauge-box">
+                <div class="gauge-ring-outer">
+                  <svg class="gauge-svg" viewBox="0 0 120 120">
+                    <circle class="gauge-bg" cx="60" cy="60" r="52"></circle>
+                    <circle class="gauge-progress" id="gauge-circle" cx="60" cy="60" r="52"></circle>
+                  </svg>
+                  <div class="gauge-content">
+                    <span class="gauge-value" id="spam-prob-val">0.0%</span>
+                    <span class="gauge-caption">Spam Probability</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="kpi-metrics-grid">
+                <div class="kpi-card">
+                  <span class="kpi-title">Confidence</span>
+                  <span class="kpi-value" id="kpi-confidence">--</span>
+                  <span class="kpi-sub" id="kpi-conf-sub">Posterior certainty</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-title">CPU Latency</span>
+                  <span class="kpi-value highlight" id="kpi-latency">-- ms</span>
+                  <span class="kpi-sub green" id="kpi-latency-sub">&lt; 100ms Target</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-title">Model Core</span>
+                  <span class="kpi-value" id="kpi-model">--</span>
+                  <span class="kpi-sub" id="kpi-model-ver">PyTorch Architecture</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Explainability Attention Heatmap -->
+            <div class="explainability-box" id="attention-section">
+              <div class="section-title-row">
+                <h3 class="section-title">Word Attention & Salience</h3>
+                <span class="legend-note">Higher opacity indicates stronger classification weight</span>
+              </div>
+              <div class="attention-tokens-cloud" id="tokens-cloud">
+                <span class="placeholder-text">Run analysis with explainability enabled to inspect word attention weights.</span>
+              </div>
+            </div>
+
+            <!-- Extracted Heuristic Signals -->
+            <div class="signals-box" id="signals-section">
+              <h3 class="section-title">Heuristic Threat Telemetry</h3>
+              <div class="signals-chips-grid">
+                <div class="signal-item">
+                  <span class="sig-name">Uppercase Ratio</span>
+                  <span class="sig-val" id="sig-caps">0.0%</span>
+                </div>
+                <div class="signal-item">
+                  <span class="sig-name">Exclamation Marks</span>
+                  <span class="sig-val" id="sig-excl">0</span>
+                </div>
+                <div class="signal-item">
+                  <span class="sig-name">Currency Signs</span>
+                  <span class="sig-val" id="sig-currency">0</span>
+                </div>
+                <div class="signal-item">
+                  <span class="sig-name">URLs Detected</span>
+                  <span class="sig-val" id="sig-urls">0</span>
+                </div>
+                <div class="signal-item" id="sig-phish-card" style="border-left: 3px solid #ef4444;">
+                  <span class="sig-name">Phishing Risk</span>
+                  <span class="sig-val" id="sig-phish-risk" style="color: #ef4444; font-weight: 700;">0.0%</span>
+                </div>
+              </div>
+              <div id="phishing-vectors-box" class="hidden" style="margin-top: 12px; padding: 10px 14px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 8px;">
+                <span style="font-size: 0.82rem; font-weight: 600; color: #fca5a5; display: block; margin-bottom: 6px;">🚨 Detected Phishing Vectors:</span>
+                <div id="phishing-vectors-list" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: TRAINING & DATA CLEANING STUDIO -->
+      <section id="training-tab" class="tab-panel">
+        
+        <!-- Studio Header Banner -->
+        <div class="card glass-card studio-hero">
+          <div class="studio-hero-content">
+            <div class="studio-pill">
+              <span class="studio-pill-dot"></span>
+              Full MLOps Pipeline
+            </div>
+            <h2 class="studio-title">Dataset Ingestion, Automated Cleaning & Training Studio</h2>
+            <p class="studio-subtitle">
+              Feed raw datasets (CSV, TSV, JSON, or text). SpamGuard automatically strips HTML entities, normalizes URLs/currencies/phones/numbers, eliminates duplicates, and trains high-performance models with live progress tracking.
+            </p>
+          </div>
+          
+          <!-- Stepper Navigation -->
+          <div class="stepper-bar">
+            <div class="step-chip active" id="step-chip-1">
+              <span class="step-circle">1</span>
+              <span class="step-label">Feed Data</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-chip" id="step-chip-2">
+              <span class="step-circle">2</span>
+              <span class="step-label">Clean & Normalize</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-chip" id="step-chip-3">
+              <span class="step-circle">3</span>
+              <span class="step-label">Train Model</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-chip" id="step-chip-4">
+              <span class="step-circle">4</span>
+              <span class="step-label">Deploy & Test</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 1: FEED DATA -->
+        <div class="card glass-card studio-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">1. Feed Training Data</h3>
+              <p class="card-subtitle">Upload a dataset file, paste raw emails, or load the pre-verified SpamGuard corpus</p>
+            </div>
+            <div class="quick-feed-actions">
+              <button type="button" id="load-corpus-btn" class="secondary-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Load Corpus (5,163 records)
+              </button>
+              <button type="button" id="load-demo-btn" class="secondary-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Load Demo (50 records)
+              </button>
+              <button type="button" id="toggle-paste-btn" class="secondary-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Paste Raw Data
+              </button>
+            </div>
+          </div>
+
+          <!-- Drag and Drop Zone -->
+          <div class="dropzone-box" id="dataset-dropzone">
+            <input type="file" id="dataset-file-input" accept=".csv,.tsv,.json,.txt" style="display: none;">
+            <div class="dropzone-icon">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <h4 class="dropzone-title">Drag & Drop your CSV, TSV, or JSON dataset here</h4>
+            <p class="dropzone-subtitle">or <button type="button" class="browse-link" id="browse-btn">browse your computer</button> to upload</p>
+            <span class="dropzone-hints">Supports headers like <code>text</code>, <code>message</code>, <code>label</code>, <code>target</code> (ham / spam or 0 / 1)</span>
+          </div>
+
+          <!-- Collapsible Paste Area -->
+          <div id="paste-drawer" class="paste-drawer" style="display: none;">
+            <label for="paste-input" class="field-label">Paste Raw Data (CSV, TSV, or one text message per line):</label>
+            <textarea id="paste-input" class="custom-textarea" rows="4" placeholder="text,label&#10;Win $5000 now call 12345,spam&#10;Hey let's meet tomorrow for lunch,ham"></textarea>
+            <div class="paste-drawer-actions">
+              <button type="button" id="submit-paste-btn" class="primary-btn">Parse & Ingest Pasted Text</button>
+            </div>
+          </div>
+
+          <!-- Ingestion Summary & Column Mapping Bar -->
+          <div id="ingest-summary-box" class="ingest-summary-box" style="display: none;">
+            <div class="summary-top">
+              <div class="summary-badge-group">
+                <span class="status-chip success-chip" id="data-loaded-chip">✔ Dataset Loaded</span>
+                <span class="file-stat-chip" id="data-rows-stat">0 rows</span>
+                <span class="file-stat-chip" id="data-cols-stat">0 columns</span>
+              </div>
+            </div>
+
+            <div class="column-mapping-grid">
+              <div class="form-group">
+                <label for="col-text-select" class="field-label">Message / Text Column:</label>
+                <select id="col-text-select" class="custom-select"></select>
+              </div>
+              <div class="form-group">
+                <label for="col-label-select" class="field-label">Target / Label Column:</label>
+                <select id="col-label-select" class="custom-select"></select>
+              </div>
+              <div class="form-group">
+                <label for="spam-tags-input" class="field-label">Spam Identifiers (comma-separated):</label>
+                <input type="text" id="spam-tags-input" class="custom-input" value="spam, 1, phishing, threat, yes, true">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: AUTOMATED CLEANING & PREPROCESSING PIPELINE -->
+        <div class="card glass-card studio-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">2. Automated Data Cleaning & Hygiene Pipeline</h3>
+              <p class="card-subtitle">Configure text cleaners, token normalizers, and deduplication rules</p>
+            </div>
+            <button type="button" id="run-clean-btn" class="primary-btn glow-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="M2 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="M12 22v-4"/><path d="m19.07 19.07-2.83-2.83"/><path d="M22 12h-4"/><path d="m19.07 4.93-2.83 2.83"/></svg>
+              <span id="clean-btn-text">🧹 Clean & Normalize Dataset</span>
+            </button>
+          </div>
+
+          <!-- Cleaning Options Switch Grid -->
+          <div class="cleaning-switches-grid">
+            <label class="toggle-card">
+              <input type="checkbox" id="opt-strip-html" checked>
+              <div class="toggle-content">
+                <div class="toggle-title">🛡️ Strip HTML & Entity Tags</div>
+                <div class="toggle-desc">Removes <code>&lt;tags&gt;</code> and decodes <code>&amp;amp;</code>, <code>&amp;#39;</code></div>
+              </div>
+            </label>
+
+            <label class="toggle-card">
+              <input type="checkbox" id="opt-norm-urls" checked>
+              <div class="toggle-content">
+                <div class="toggle-title">🌐 Normalize Web URLs</div>
+                <div class="toggle-desc">Converts hyperlinks to uniform <code>[URL]</code> token</div>
+              </div>
+            </label>
+
+            <label class="toggle-card">
+              <input type="checkbox" id="opt-norm-emails" checked>
+              <div class="toggle-content">
+                <div class="toggle-title">📧 Normalize Email Addresses</div>
+                <div class="toggle-desc">Converts sender emails to <code>[EMAIL]</code> token</div>
+              </div>
+            </label>
+
+            <label class="toggle-card">
+              <input type="checkbox" id="opt-norm-phones" checked>
+              <div class="toggle-content">
+                <div class="toggle-title">📞 Normalize Phone Numbers</div>
+                <div class="toggle-desc">Converts phone patterns to <code>[PHONE]</code> token</div>
+              </div>
+            </label>
+
+            <label class="toggle-card">
+              <input type="checkbox" id="opt-norm-currency" checked>
+              <div class="toggle-content">
+                <div class="toggle-title">💰 Normalize Currency Tokens</div>
+                <div class="toggle-desc">Standardizes $, €, £, ¥ into <code>[CURRENCY]</code></div>
+              </div>
+            </label>
+
+            <label class="toggle-card">
+              <input type="checkbox" id="opt-norm-numbers" checked>
+              <div class="toggle-content">
+                <div class="toggle-title">🔢 Normalize Numeric Sequences</div>
+                <div class="toggle-desc">Replaces prize codes & quantities with <code>[NUMBER]</code></div>
+              </div>
+            </label>
+
+            <label class="toggle-card">
+              <input type="checkbox" id="opt-lowercase" checked>
+              <div class="toggle-content">
+                <div class="toggle-title">🔤 Standardize Lowercase</div>
+                <div class="toggle-desc">Normalizes letter casing for consistent tokenization</div>
+              </div>
+            </label>
+
+            <label class="toggle-card">
+              <input type="checkbox" id="opt-dedup" checked>
+              <div class="toggle-content">
+                <div class="toggle-title">🚫 Deduplicate Messages</div>
+                <div class="toggle-desc">Drops exact duplicate records across training set</div>
+              </div>
+            </label>
+
+            <label class="toggle-card">
+              <input type="checkbox" id="opt-filter-empty" checked>
+              <div class="toggle-content">
+                <div class="toggle-title">✂️ Drop Empty & Noise Strings</div>
+                <div class="toggle-desc">Filters out empty entries or messages &lt; 3 characters</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Real-Time Telemetry Dashboard (Shown after cleaning) -->
+          <div id="clean-telemetry-banner" class="clean-telemetry-banner" style="display: none;">
+            <div class="telemetry-stat-card">
+              <span class="telemetry-val" id="clean-stat-retained">0</span>
+              <span class="telemetry-label">Cleaned Records Retained</span>
+            </div>
+            <div class="telemetry-stat-card">
+              <span class="telemetry-val text-warning" id="clean-stat-dropped">0</span>
+              <span class="telemetry-label">Duplicates & Noise Dropped</span>
+            </div>
+            <div class="telemetry-stat-card class-balance-card">
+              <div class="balance-labels">
+                <span class="ham-label" id="balance-ham-label">Ham: 0 (0%)</span>
+                <span class="spam-label" id="balance-spam-label">Spam: 0 (0%)</span>
+              </div>
+              <div class="balance-bar-track">
+                <div class="balance-bar-fill" id="balance-bar-fill" style="width: 50%;"></div>
+              </div>
+              <span class="telemetry-label">Class Distribution</span>
+            </div>
+            <div class="telemetry-stat-card token-replacements-card">
+              <div class="tokens-pill-row">
+                <span class="token-pill url" id="rep-urls">URLs: 0</span>
+                <span class="token-pill phone" id="rep-phones">Phone: 0</span>
+                <span class="token-pill currency" id="rep-curr">Currency: 0</span>
+                <span class="token-pill number" id="rep-nums">Numbers: 0</span>
+              </div>
+              <span class="telemetry-label">Threat Tokens Normalized</span>
+            </div>
+          </div>
+
+          <!-- Interactive Before & After Diff Table -->
+          <div id="clean-diff-section" class="clean-diff-section" style="display: none;">
+            <div class="diff-header-bar">
+              <div class="diff-title-group">
+                <h4 class="diff-title">Before vs. After Cleaning Inspection</h4>
+                <p class="diff-sub">Verify raw input vs. cleaned & normalized tokens with threat signal telemetry</p>
+              </div>
+
+              <div class="diff-actions">
+                <div class="filter-pill-group">
+                  <button type="button" class="filter-pill active" data-filter="all" id="filter-all-btn">All</button>
+                  <button type="button" class="filter-pill" data-filter="spam" id="filter-spam-btn">Spam Only</button>
+                  <button type="button" class="filter-pill" data-filter="ham" id="filter-ham-btn">Ham Only</button>
+                </div>
+                <a id="download-clean-btn" href="/api/data/download-cleaned" class="secondary-btn" download="cleaned_spam_dataset.csv">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download Cleaned CSV
+                </a>
+              </div>
+            </div>
+
+            <div class="table-container diff-table-container">
+              <table class="custom-table" id="clean-diff-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">#</th>
+                    <th style="width: 90px;">Class</th>
+                    <th>Raw Input (Before)</th>
+                    <th>Cleaned & Normalized (After)</th>
+                    <th style="width: 170px;">Threat Signals</th>
+                  </tr>
+                </thead>
+                <tbody id="clean-diff-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: MODEL TRAINING STUDIO -->
+        <div class="card glass-card studio-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">3. Model Training Studio</h3>
+              <p class="card-subtitle">Select architecture, tune training parameters, and run the pipeline</p>
+            </div>
+            <button type="button" id="start-train-btn" class="primary-btn glow-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span id="start-train-text">🚀 Launch Training Pipeline</span>
+            </button>
+          </div>
+
+          <!-- Model Candidate Selector Cards -->
+          <div class="model-cards-grid">
+            <div class="model-candidate-card active" data-model="baseline_lr">
+              <div class="candidate-header">
+                <span class="candidate-icon">⚡</span>
+                <span class="candidate-badge recommended">High Speed</span>
+              </div>
+              <h4 class="candidate-name">Logistic Regression</h4>
+              <p class="candidate-desc">TF-IDF N-grams with L2 regularization. Trains in seconds, highly reliable for real-time edge serving.</p>
+              <div class="candidate-footer">
+                <span>F1-Score: <strong>~0.960</strong></span>
+                <span>Latency: <strong>&lt; 5ms</strong></span>
+              </div>
+            </div>
+
+            <div class="model-candidate-card" data-model="baseline_nb">
+              <div class="candidate-header">
+                <span class="candidate-icon">🧠</span>
+                <span class="candidate-badge">Probabilistic</span>
+              </div>
+              <h4 class="candidate-name">Multinomial Naive Bayes</h4>
+              <p class="candidate-desc">Classic Bayesian probability classifier with sublinear TF term frequency weighting.</p>
+              <div class="candidate-footer">
+                <span>F1-Score: <strong>~0.945</strong></span>
+                <span>Latency: <strong>&lt; 3ms</strong></span>
+              </div>
+            </div>
+
+            <div class="model-candidate-card" data-model="bilstm">
+              <div class="candidate-header">
+                <span class="candidate-icon">🧬</span>
+                <span class="candidate-badge deep-learning">Deep Learning</span>
+              </div>
+              <h4 class="candidate-name">PyTorch BiLSTM + Attention</h4>
+              <p class="candidate-desc">2-layer Bidirectional LSTM with Bahdanau additive attention pooling and token explainability.</p>
+              <div class="candidate-footer">
+                <span>F1-Score: <strong>~0.983</strong></span>
+                <span>Latency: <strong>~20ms</strong></span>
+              </div>
+            </div>
+
+            <div class="model-candidate-card" data-model="distilbert">
+              <div class="candidate-header">
+                <span class="candidate-icon">🤖</span>
+                <span class="candidate-badge transformer">Transformer</span>
+              </div>
+              <h4 class="candidate-name">DistilBERT Fine-Tuned</h4>
+              <p class="candidate-desc">Pretrained Hugging Face transformer sequence classifier fine-tuned with AdamW.</p>
+              <div class="candidate-footer">
+                <span>F1-Score: <strong>~0.989</strong></span>
+                <span>Latency: <strong>~65ms</strong></span>
+              </div>
+            </div>
+
+            <div class="model-candidate-card" data-model="all">
+              <div class="candidate-header">
+                <span class="candidate-icon">🏆</span>
+                <span class="candidate-badge benchmark">Benchmark</span>
+              </div>
+              <h4 class="candidate-name">Train All Candidates</h4>
+              <p class="candidate-desc">Sequentially trains all baseline and deep learning models to generate full comparative charts.</p>
+              <div class="candidate-footer">
+                <span>Comparison: <strong>Full Suite</strong></span>
+                <span>Generates: <strong>Plots</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hyperparameter Settings Bar -->
+          <div class="hyperparams-bar">
+            <div class="hyperparam-item">
+              <label for="param-epochs" class="field-label">Epochs:</label>
+              <input type="number" id="param-epochs" class="custom-input small-input" value="5" min="1" max="50">
+            </div>
+            <div class="hyperparam-item">
+              <label for="param-batch-size" class="field-label">Batch Size:</label>
+              <select id="param-batch-size" class="custom-select small-select">
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64" selected>64</option>
+                <option value="128">128</option>
+              </select>
+            </div>
+            <div class="hyperparam-item">
+              <label for="param-lr" class="field-label">Learning Rate:</label>
+              <select id="param-lr" class="custom-select small-select">
+                <option value="0.001" selected>0.001 (1e-3)</option>
+                <option value="0.0005">0.0005 (5e-4)</option>
+                <option value="0.0001">0.0001 (1e-4)</option>
+                <option value="0.00002">0.00002 (2e-5)</option>
+              </select>
+            </div>
+            <div class="hyperparam-item">
+              <label class="field-label">Split Ratio:</label>
+              <span class="split-pill">70% Train / 15% Val / 15% Test</span>
+            </div>
+          </div>
+
+          <!-- Live Progress & Hacker Terminal Console -->
+          <div class="training-monitor-box" id="train-monitor-box">
+            <div class="monitor-header">
+              <div class="monitor-status-group">
+                <span class="status-dot pulsing" id="train-pulse-dot"></span>
+                <span class="monitor-status-text" id="train-step-text">Ready to train</span>
+              </div>
+              <div class="monitor-progress-group">
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" id="train-progress-fill" style="width: 0%;"></div>
+                </div>
+                <span class="progress-pct" id="train-progress-pct">0%</span>
+              </div>
+            </div>
+
+            <!-- Terminal Output -->
+            <div class="terminal-container">
+              <div class="terminal-bar">
+                <div class="terminal-dots">
+                  <span class="dot red"></span>
+                  <span class="dot yellow"></span>
+                  <span class="dot green"></span>
+                </div>
+                <span class="terminal-title">spamguard-ml-runner ~ live logs</span>
+              </div>
+              <div class="terminal-body" id="train-terminal-body">
+                <p class="term-line info">[System] Training pipeline ready. Select an architecture and click 'Launch Training Pipeline'.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: EVALUATION SCORECARD & DEPLOYMENT -->
+        <div class="card glass-card studio-card" id="train-eval-card" style="display: none;">
+          <div class="eval-success-header">
+            <div class="eval-trophy">🎯</div>
+            <div>
+              <h3 class="card-title text-success">Model Trained & Hot-Reloaded Successfully!</h3>
+              <p class="card-subtitle">Evaluated on 15% held-out test split. Deployed immediately into active REST service.</p>
+            </div>
+          </div>
+
+          <div class="eval-scorecards-grid">
+            <div class="scorecard">
+              <span class="score-val" id="eval-acc">-</span>
+              <span class="score-label">Test Accuracy</span>
+            </div>
+            <div class="scorecard">
+              <span class="score-val text-primary" id="eval-f1">-</span>
+              <span class="score-label">F1-Score (Spam)</span>
+            </div>
+            <div class="scorecard">
+              <span class="score-val" id="eval-prec">-</span>
+              <span class="score-label">Precision (Spam)</span>
+            </div>
+            <div class="scorecard">
+              <span class="score-val" id="eval-rec">-</span>
+              <span class="score-label">Recall (Spam)</span>
+            </div>
+            <div class="scorecard">
+              <span class="score-val" id="eval-auc">-</span>
+              <span class="score-label">ROC-AUC</span>
+            </div>
+          </div>
+
+          <div class="eval-actions-bar">
+            <button type="button" id="test-in-live-btn" class="primary-btn glow-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-2 10h5L11 22l2-10H8l5-10z"/></svg>
+              Test Model in Live Analyzer
+            </button>
+            <button type="button" id="view-benchmarks-btn" class="secondary-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              View Full Benchmark Charts
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- TAB 3: BATCH SCANNER -->
+      <section id="batch-tab" class="tab-panel">
+        <div class="card glass-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">High-Throughput Batch Email Scanner</h2>
+              <p class="card-subtitle">Analyze multi-line email records simultaneously via <code>POST /predict/batch</code></p>
+            </div>
+            <button type="button" id="load-sample-batch-btn" class="secondary-btn">Load 5 Sample Emails</button>
+          </div>
+
+          <div class="batch-input-area">
+            <textarea id="batch-textarea" class="custom-textarea" rows="6" placeholder="Enter one email message per line..."></textarea>
+            <div class="batch-actions">
+              <button type="button" id="run-batch-btn" class="primary-btn glow-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                Execute Batch Classification
+              </button>
+            </div>
+          </div>
+
+          <!-- Batch Summary Cards -->
+          <div class="batch-stats-banner" id="batch-stats-banner" style="display: none;">
+            <div class="batch-stat-card">
+              <span class="stat-num" id="batch-total-count">0</span>
+              <span class="stat-label">Total Messages</span>
+            </div>
+            <div class="batch-stat-card spam-stat">
+              <span class="stat-num" id="batch-spam-count">0</span>
+              <span class="stat-label">Spam Identified</span>
+            </div>
+            <div class="batch-stat-card ham-stat">
+              <span class="stat-num" id="batch-ham-count">0</span>
+              <span class="stat-label">Legitimate (Ham)</span>
+            </div>
+            <div class="batch-stat-card">
+              <span class="stat-num" id="batch-total-latency">0 ms</span>
+              <span class="stat-label">Batch Wall-Clock Time</span>
+            </div>
+          </div>
+
+          <!-- Batch Results Table -->
+          <div class="table-container" id="batch-table-container" style="display: none;">
+            <table class="custom-table" id="batch-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">#</th>
+                  <th>Message Snippet</th>
+                  <th style="width: 130px;">Verdict</th>
+                  <th style="width: 130px;">Spam Prob</th>
+                  <th style="width: 110px;">Confidence</th>
+                  <th style="width: 100px;">Latency</th>
+                </tr>
+              </thead>
+              <tbody id="batch-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: BENCHMARKS & PLOTS -->
+      <section id="benchmark-tab" class="tab-panel">
+        <div class="benchmark-grid">
+          
+          <!-- Metrics Table Card -->
+          <div class="card glass-card full-width">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Production Model Performance & Baselines</h2>
+                <p class="card-subtitle">Evaluated on held-out 15% stratified test split across public spam datasets</p>
+              </div>
+              <button type="button" id="refresh-metrics-btn" class="secondary-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                Refresh Metrics
+              </button>
+            </div>
+
+            <div class="table-container">
+              <table class="custom-table" id="benchmark-table">
+                <thead>
+                  <tr>
+                    <th>Model Candidate</th>
+                    <th>Accuracy</th>
+                    <th>Precision (Spam)</th>
+                    <th>Recall (Spam)</th>
+                    <th>F1-Score</th>
+                    <th>ROC-AUC</th>
+                    <th>Target Status</th>
+                  </tr>
+                </thead>
+                <tbody id="benchmark-tbody">
+                  <tr>
+                    <td colspan="7" class="loading-cell">Loading benchmark results from reports/evaluation_report.json...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Evaluation Visualizations -->
+          <div class="card glass-card">
+            <div class="card-header">
+              <h3 class="card-title">Confusion Matrices</h3>
+            </div>
+            <div class="image-preview-box">
+              <img id="cm-plot-img" src="/reports/confusion_matrix.png" alt="Confusion Matrix Plot" onerror="this.onerror=null; this.src=''; this.parentElement.innerHTML='<div class=\'placeholder-box\'>Plot will appear once training and evaluation are executed.</div>';">
+            </div>
+          </div>
+
+          <div class="card glass-card">
+            <div class="card-header">
+              <h3 class="card-title">ROC Curves Comparison</h3>
+            </div>
+            <div class="image-preview-box">
+              <img id="roc-plot-img" src="/reports/roc_curve.png" alt="ROC Curve Plot" onerror="this.onerror=null; this.src=''; this.parentElement.innerHTML='<div class=\'placeholder-box\'>ROC Curve will appear once models are evaluated.</div>';">
+            </div>
+          </div>
+
+          <div class="card glass-card">
+            <div class="card-header">
+              <h3 class="card-title">Precision-Recall Curves</h3>
+            </div>
+            <div class="image-preview-box">
+              <img id="pr-plot-img" src="/reports/precision_recall_curve.png" alt="PR Curve Plot" onerror="this.onerror=null; this.src=''; this.parentElement.innerHTML='<div class=\'placeholder-box\'>PR Curve will appear once models are evaluated.</div>';">
+            </div>
+          </div>
+
+          <div class="card glass-card">
+            <div class="card-header">
+              <h3 class="card-title">Metric Benchmarks (F1, Precision, Recall)</h3>
+            </div>
+            <div class="image-preview-box">
+              <img id="bar-plot-img" src="/reports/metrics_comparison.png" alt="Metrics Comparison Bar Chart" onerror="this.onerror=null; this.src=''; this.parentElement.innerHTML='<div class=\'placeholder-box\'>Bar chart will appear once models are evaluated.</div>';">
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <span>SpamGuard v1.0 • Built with PyTorch 2.x, FastAPI, and Hugging Face</span>
+      <span class="latency-pill">Latency SLA: &lt; 100ms CPU</span>
+    </footer>
+    </div> <!-- app-main-viewport -->
+  </div> <!-- app-layout -->
+
+  <script src="/static/app.js?v=2.1"></script>
+</body>
+</html>

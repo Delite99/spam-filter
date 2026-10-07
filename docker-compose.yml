@@ -1,0 +1,24 @@
+services:
+  spamguard-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spamguard_api
+    ports:
+      - "3030:3030"
+    environment:
+      - PORT=3030
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+    restart: unless-stopped
+    # Use --reload so any src/ file change is picked up without a container restart
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 3030 --reload --reload-dir /app/src
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3030/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
